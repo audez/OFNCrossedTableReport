@@ -1,5 +1,4 @@
-//request: https://staging.coopcircuits.fr/api/v0/reports/orders_and_fulfillment/order_cycle_customer_totals?q[completed_at_gt]=2020_01_02
-
+// Get the OC customer report JSON
 const json = require('./customerreport.json')
 
 const data = json[0].data
@@ -10,7 +9,7 @@ let jsonObject
 let jsonPricesObject
 let filteredDataByOC
 let filteredData
-let myArray = []
+let jsonArray = []
 
 for (let i in data) {
     orderCycles.push(data[i].order_cycle)
@@ -19,6 +18,7 @@ for (let i in data) {
 orderCycles = Array.from(new Set(orderCycles))
 products = Array.from(new Set(products))
 
+// Create the object for variants prices
 jsonPricesObject = {}
 jsonPricesObject["Boutique"] = "-"
 jsonPricesObject["Cycle de vente"] = "-"
@@ -32,6 +32,7 @@ for (let p = 0; p < products.length; p++) {
     jsonPricesObject[product] = match.item_price
 }
 
+// Loop through OC then hubs
 for (let o = 0; o < orderCycles.length; o++) {
     filteredDataByOC = data
     filteredDataByOC = Object.values(data).filter((v) =>
@@ -47,9 +48,9 @@ for (let o = 0; o < orderCycles.length; o++) {
         filteredData = filteredDataByOC
         filteredData = Object.values(filteredDataByOC).filter((v) =>
             v.hub === hubNames[h])
-
+        
+        // Get all products sold for this OC and this hub
         products = []
-        // Aggregates product+variant
         for (let i = 0; i < filteredData.length; i++) {
             const toAdd = filteredData[i].product + " - " + filteredData[i].variant
             products.push(toAdd)
@@ -57,7 +58,8 @@ for (let o = 0; o < orderCycles.length; o++) {
         products = Array.from(new Set(products))
 
         let customerList = []
-
+        
+        // Aggregates customers names + phone numbers
         for (let x = 0; x < filteredData.length; x++) {
             customerList.push(filteredData[x].customer + " - " + filteredData[x].phone)
         }
@@ -68,7 +70,7 @@ for (let o = 0; o < orderCycles.length; o++) {
         for (let c = 0; c < customerList.length; c++) {
             const customer = customerList[c]
 
-            //Starting building our JSON
+            //Starting building our JSON object
             jsonObject = {}
             jsonObject["Boutique"] = hubNames[h]
             jsonObject["Cycle de vente"] = orderCycles[o]
@@ -82,7 +84,10 @@ for (let o = 0; o < orderCycles.length; o++) {
                 for (let k = 0; k < filteredData.length; k++) {
                     if ((filteredData[k].product + " - " + filteredData[k].variant) === product
                         && (filteredData[k].customer + " - " + filteredData[k].phone) === customer) {
-                        totalPerCustomer += filteredData[k].quantity
+                        
+                        // Get product quantities
+                        totalPerCustomer += filteredData[k].quantity 
+                        
                         jsonObject[product] = totalPerCustomer
                         jsonObject["Prix total"] = filteredData[k].total_price
                         jsonObject["Payé"] = filteredData[k].paid
@@ -90,11 +95,12 @@ for (let o = 0; o < orderCycles.length; o++) {
                     }
                 }
             }
-            myArray.push(jsonObject)
+            //Add the object to the final Array
+            jsonArray.push(jsonObject)
         }
     }
 }
-myArray.unshift(jsonPricesObject)
-console.log("array = " + JSON.stringify(myArray))
+jsonArray.unshift(jsonPricesObject)
+console.log("array = " + JSON.stringify(jsonArray))
 
 
