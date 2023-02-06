@@ -18,7 +18,7 @@ for (let i in data) {
 orderCycles = Array.from(new Set(orderCycles))
 products = Array.from(new Set(products))
 
-// Create the object for variants prices
+// Create a specific JSON object to get variants prices of all products
 jsonPricesObject = {}
 jsonPricesObject["Boutique"] = "-"
 jsonPricesObject["Cycle de vente"] = "-"
@@ -70,7 +70,7 @@ for (let o = 0; o < orderCycles.length; o++) {
         for (let c = 0; c < customerList.length; c++) {
             const customer = customerList[c]
 
-            //Starting building our JSON object
+            //Start building the main JSON object
             jsonObject = {}
             jsonObject["Boutique"] = hubNames[h]
             jsonObject["Cycle de vente"] = orderCycles[o]
@@ -100,6 +100,7 @@ for (let o = 0; o < orderCycles.length; o++) {
         }
     }
 }
+// Add the prices to the final Array
 jsonArray.unshift(jsonPricesObject)
 console.log("array = " + JSON.stringify(jsonArray))
 
