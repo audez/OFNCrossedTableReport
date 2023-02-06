@@ -20,8 +20,8 @@ products = Array.from(new Set(products))
 
 // Create a specific JSON object to get variants prices of all products
 jsonPricesObject = {}
-jsonPricesObject["Boutique"] = "-"
 jsonPricesObject["Cycle de vente"] = "-"
+jsonPricesObject["Boutique"] = "-"
 jsonPricesObject["Name"] = "-"
 
 for (let p = 0; p < products.length; p++) {
@@ -72,8 +72,8 @@ for (let o = 0; o < orderCycles.length; o++) {
 
             //Start building the main JSON object
             jsonObject = {}
-            jsonObject["Boutique"] = hubNames[h]
             jsonObject["Cycle de vente"] = orderCycles[o]
+            jsonObject["Boutique"] = hubNames[h]
             jsonObject["Name"] = customer
 
             //Build our product in columns
