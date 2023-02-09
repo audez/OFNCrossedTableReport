@@ -1,5 +1,5 @@
 const fs = require("fs").promises;
-const generateReport = require("./generateReport");
+const generateReport = require("./src/GenerateReport");
 
 describe("GenerateReport", () => {
   it("#generateReport() function", async () => {

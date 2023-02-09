@@ -1,5 +1,5 @@
 const fs = require("fs");
-const generateReport = require("./generateReport");
+const generateReport = require("./src/GenerateReport");
 
 fs.readFile("./oc_customer_report.json", "utf8", (err, jsonString) => {
   if (err) {
