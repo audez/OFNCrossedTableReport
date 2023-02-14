@@ -1,5 +1,5 @@
 // Get the OC customer report JSON
-const json = require('./jardindeuxmais.json')
+const json = require('./terravie.json')
 
 const initialArray = json[0].data
 
@@ -14,6 +14,9 @@ let jsonEmptyLine
 let shippingMethodArray
 let orderCycleArray
 let orderCycleNames
+let orderTotalPrice = 0
+let orderPaid
+let paymentMethod
 let hubNames
 let shippingNames
 let variantNames
@@ -23,7 +26,6 @@ let hubArray
 orderCycleNames = extractNames(initialArray, "orderCycles")
 
 orderCycleNames.forEach(orderCycleName => {
-        addOrderCycleNameToJson(orderCycleName)
 
         orderCycleArray = []
         orderCycleArray = Object.values(initialArray).filter(
@@ -64,9 +66,13 @@ orderCycleNames.forEach(orderCycleName => {
                     variantNames = extractNames(shippingMethodArray, "variants")
 
                     variantNames.forEach(variant => {
-                        addOrderInfoToMainObject(shippingMethodArray, variant, customerName)
+                        addItemPricesToMainObject(shippingMethodArray, variant, customerName)
                     })
+
+                    addOrderInfoToMainObject(customerName)
+
                     jsonOCArray.push(jsonMainObject)
+
                 })
 
                 jsonOCArray.push(jsonEmptyLine)
@@ -82,19 +88,17 @@ orderCycleNames.forEach(orderCycleName => {
             jsonOCArray.push(jsonEmptyLine)
         })
         jsonOCArray.unshift(jsonVariantPrices)
+        let jsonOrderCycle = {}
+        jsonOrderCycle["Cycle de vente"] = orderCycleName
+        jsonOCArray.unshift(jsonOrderCycle)
 
-        jsonMainArray.push(jsonOCArray)
+    jsonMainArray.push(jsonOCArray)
         jsonOCArray.push(jsonEmptyLine)
     }
 )
 console.log("array = " + JSON.stringify(jsonMainArray))
 
-function addOrderCycleNameToJson(orderCycleName) {
-    const jsonOrderCycle = {}
-    jsonOrderCycle["-"] = "CYCLE DE VENTE: " + orderCycleName
-    jsonOCArray = []
-    jsonOCArray.push(jsonOrderCycle)
-}
+
 
 function addHubNameToJson(hubName) {
     const jsonHub = {}
@@ -141,7 +145,7 @@ function addVariantPricesToJson(array) {
 
 }
 
-function addOrderInfoToMainObject(array, variant, customer) {
+function addItemPricesToMainObject(array, variant, customer) {
 
     let variantQuantity = 0
 
@@ -151,18 +155,27 @@ function addOrderInfoToMainObject(array, variant, customer) {
             && (item.customer + " - " + item.phone) === customer) {
 
             variantQuantity += item.quantity
-            jsonMainObject[variant] = variantQuantity // Columns with variant names !!!
+            jsonMainObject[variant] = variantQuantity // Columns with variant names :D
 
-            jsonMainObject["Total commande"] = item.item_price + "€"
-
-            if (item.paid.toString() === "false") {
-                jsonMainObject["Payé"] = "non"
-            } else {
-                jsonMainObject["Payé"] = "oui"
-            }
-            jsonMainObject["Méthode de paiement"] = item.payment_method
+            orderTotalPrice += parseFloat(item.item_price)
+            orderPaid = item.paid.toString()
+            paymentMethod = item.payment_method
         }
     })
+}
+
+function addOrderInfoToMainObject(customerName) {
+
+    jsonMainObject["Total commande"] = orderTotalPrice + "€"
+
+    if (orderPaid === "false") {
+        jsonMainObject["Payé"] = "non"
+    } else {
+        jsonMainObject["Payé"] = "oui"
+    }
+    jsonMainObject["Méthode de paiement"] = paymentMethod
+
+    orderTotalPrice = 0
 }
 
 
@@ -195,6 +208,8 @@ function addTotalToObject(variantList, array, toReturn) {
         jsonVariantTotal["Infos client"] = "TOTAL PRIX VARIANTES"
     }
 
+    let grandTotal = 0
+
     variantList.forEach(variant => {
         let total = 0
         array.forEach(element => {
@@ -206,12 +221,16 @@ function addTotalToObject(variantList, array, toReturn) {
                 }
             }
         })
-            if(toReturn ==="quantity"){
-                jsonVariantTotal[variant] = total
-            } else {
-                jsonVariantTotal[variant] = total.toFixed(2)
-            }
+        if (toReturn === "quantity") {
+            jsonVariantTotal[variant] = total
+        } else {
+            jsonVariantTotal[variant] = total.toFixed(2)
+        }
+        grandTotal += total
     })
-    return jsonVariantTotal
+    if(toReturn === "price"){
+        jsonVariantTotal["Total commande"] = grandTotal + "€"
+    }
 
+    return jsonVariantTotal
 }
